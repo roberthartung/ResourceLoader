@@ -6,6 +6,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.util.Enumeration;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 
@@ -27,13 +28,22 @@ public class ResourceLoader {
 	}
 	
 	public static Resource getFileResource(String path) throws IOException {
-		URL resource = ResourceLoader.class.getClassLoader().getResource(path);
+		URL resource = null;
+		// URL resource = ResourceLoader.class.getClassLoader().getResource(path);
+		Enumeration<URL> resources = ResourceLoader.class.getClassLoader().getResources(path);
+		
+		while(resources.hasMoreElements()) {
+			resource = resources.nextElement();
+		}
+		
 		if(resource == null) {
 			return null;
 		}
+		
 		if(runsFromJarFile && resource.toExternalForm().startsWith("jar:")) {
 			// Try to get file from within
 			String resourcePath = resource.getPath();
+			// Skip ! and "/" at the beginning
 			resourcePath = resourcePath.substring(resourcePath.indexOf("!")+2);
 			JarEntry jarEntry = jarFile.getJarEntry(resourcePath);
 			if(/*jarEntry == null || */jarEntry.isDirectory()) {
