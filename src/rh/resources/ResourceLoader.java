@@ -3,14 +3,22 @@ package rh.resources;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.Enumeration;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class ResourceLoader {
+	private static Logger logger = Logger.getLogger(ResourceLoader.class.getName());
+	
+	static {
+		logger.setLevel(Level.ALL);
+	}
+	
+	
 	private static boolean runsFromJarFile = false;
 	
 	private static JarFile jarFile = null;
@@ -36,6 +44,8 @@ public class ResourceLoader {
 			resource = resources.nextElement();
 		}
 		
+		logger.finest("getFileResource: " + path + " -> " + resource);
+		
 		if(resource == null) {
 			return null;
 		}
@@ -52,10 +62,9 @@ public class ResourceLoader {
 				return new Resource((int) jarEntry.getSize(), jarFile.getInputStream(jarEntry));
 			}
 		} else {
-			File file;
 			try {
-				file = new File(resource.toURI());
-				
+				logger.finest("Resource URI: " + resource.toURI());
+				File file = new File(resource.toURI());
 				if(file.isDirectory()) {
 					return null;
 				}
@@ -64,6 +73,6 @@ public class ResourceLoader {
 				return null;
 			}
 		}
+		
 	}
-	
 }
