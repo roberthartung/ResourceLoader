@@ -24,8 +24,11 @@ public class ResourceLoader {
 	private static JarFile jarFile = null;
 	
 	static {
-		File file = new File(ResourceLoader.class.getProtectionDomain().getCodeSource().getLocation().getPath());
+		String path = ResourceLoader.class.getProtectionDomain().getCodeSource().getLocation().getPath();
+		logger.info("CodeSourcePath: " + path);
+		File file = new File(path);
 		runsFromJarFile = file.exists() && file.isFile();
+		logger.info("runsFromJarFile=" + runsFromJarFile);
 		if(runsFromJarFile) {
 			try {
 				jarFile = new JarFile(file.getPath());
