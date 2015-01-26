@@ -3,8 +3,12 @@ package rh.resources;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.net.URLDecoder;
+import java.net.URLEncoder;
 import java.util.Enumeration;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
@@ -24,11 +28,15 @@ public class ResourceLoader {
 	private static JarFile jarFile = null;
 	
 	static {
-		String path = ResourceLoader.class.getProtectionDomain().getCodeSource().getLocation().getPath();
-		logger.info("CodeSourcePath: " + path);
+		URL location = ResourceLoader.class.getProtectionDomain().getCodeSource().getLocation();
+		String path = location.getPath();
+		try {
+			path = new URI(path).getPath();
+		} catch (URISyntaxException e1) {
+			logger.severe(e1.getMessage());
+		}
 		File file = new File(path);
 		runsFromJarFile = file.exists() && file.isFile();
-		logger.info("runsFromJarFile=" + runsFromJarFile);
 		if(runsFromJarFile) {
 			try {
 				jarFile = new JarFile(file.getPath());
@@ -43,11 +51,10 @@ public class ResourceLoader {
 		// URL resource = ResourceLoader.class.getClassLoader().getResource(path);
 		Enumeration<URL> resources = ResourceLoader.class.getClassLoader().getResources(path);
 		
+		// Make sure to load last resource -> allows overwriting of resources from the jar file
 		while(resources.hasMoreElements()) {
 			resource = resources.nextElement();
 		}
-		
-		logger.finest("getFileResource: " + path + " -> " + resource);
 		
 		if(resource == null) {
 			return null;
@@ -66,7 +73,7 @@ public class ResourceLoader {
 			}
 		} else {
 			try {
-				logger.finest("Resource URI: " + resource.toURI());
+				//logger.finest("Resource URI: " + resource.toURI());
 				File file = new File(resource.toURI());
 				if(file.isDirectory()) {
 					return null;
